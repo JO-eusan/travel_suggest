@@ -41,38 +41,35 @@ def get_course_data(request):
     region_id = request.GET.get('region_id')
     query = """
         SELECT 
-            c.course_id, 
-            c.course_name, 
-            (SELECT COUNT(*) 
-            FROM travel_spot s2 
-            WHERE s2.course_id = c.course_id) AS spot_count, 
-            (SELECT s2.time_move * 10
-             FROM travel_spot s2
-             WHERE s2.course_id = c.course_id
-             ORDER BY s2.course_seq DESC
-             LIMIT 1) AS total_time
-        FROM travel_course c
-        WHERE EXISTS (SELECT 1 FROM travel_spot s WHERE s.course_id = c.course_id AND s.region_id = %s)
+            course_id, 
+            course_name, 
+            spot_count, 
+            total_time
+        FROM course_summary_view
+        WHERE course_id IN (
+            SELECT DISTINCT course_id
+            FROM travel_spot
+            WHERE region_id = %s
+        )
     """
     data = execute_sql(query, [region_id])
     return JsonResponse({'course_data': data})
+
 
 def get_course_spots(request):
     """선택된 코스에 포함된 Spot 정보를 반환하는 Ajax 뷰"""
     course_id = request.GET.get('course_id')
     query = """
         SELECT 
-            s.course_seq, 
-            s.spot_name, 
-            r.region_name, 
-            c.course_name, 
-            s.div_inout, 
-            COALESCE(s.time_move - LAG(s.time_move, 1) OVER (PARTITION BY s.course_id ORDER BY s.course_seq), 0) * 10 AS actual_time
-        FROM travel_spot s
-        JOIN travel_region r ON s.region_id = r.region_id
-        JOIN travel_course c ON s.course_id = c.course_id
-        WHERE s.course_id = %s
-        ORDER BY s.course_seq
+            course_seq, 
+            spot_name, 
+            region_name, 
+            course_name, 
+            div_inout, 
+            actual_time
+        FROM spot_detail_view
+        WHERE course_id = %s
+        ORDER BY course_seq
     """
     data = execute_sql(query, [course_id])
     return JsonResponse({'spot_data': data})
