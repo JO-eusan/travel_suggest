@@ -3,54 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Region Weather and Courses</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap" rel="stylesheet">
+    <title>오늘 떠나는 한국 여행</title>
     <style>
+        @font-face {
+            font-family: 'NanumSquare';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.0/NanumSquareR.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.0/NanumSquareR.woff') format('woff');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: 'NanumSquare';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.0/NanumSquareB.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.0/NanumSquareB.woff') format('woff');
+            font-weight: bold;
+        }
         body {
-            font-family: 'Pretendard', sans-serif;
+            font-family: 'NanumSquare', sans-serif;
             text-align: center;
-            background-color: #f8f9fa;
+            background-color: #ffffff;
+            color: #333333;
             margin: 0;
             padding: 20px;
         }
         h1, h2, h3 {
-            color: #333;
+            color: #1A1A1A;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 24px;
+            margin-top: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            display: inline-block;
+            padding-bottom: 5px;
         }
         select, button {
             font-size: 16px;
-            padding: 10px;
+            padding: 10px 15px;
             margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        button {
+            color: #ffffff;
+            background-color: #104885;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         table {
             margin: 20px auto;
             border-collapse: collapse;
             width: 80%;
-            max-width: 600px;
+            max-width: 800px;
         }
         th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
             text-align: center;
         }
         th {
-            background-color: #007bff;
+            background-color: #104885;
             color: white;
         }
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: #f9f9f9;
         }
         .hidden {
             display: none;
         }
+        #spot-data {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .spot-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 15px;
+            width: 80%;
+            max-width: 600px;
+            border: 1px solid #e0e0e0;
+        }
+        .spot-item div {
+            text-align: center;
+        }
+        .spot-number {
+            flex: 0 0 50px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #104885;
+        }
+        .spot-info {
+            flex-grow: 1;
+            text-align: left;
+            padding: 0 15px;
+        }
+        .spot-time {
+            font-size: 14px;
+            color: #666666;
+        }
+        .connector {
+            width: 2px;
+            height: 20px;
+            background-color: #104885;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Region Weather and Courses</h1>
+    <h1>오늘 떠나는 한국 여행</h1>
+    <hr style="border: none; height: 2px; background-color: #e0e0e0; margin-bottom: 20px;">
 
     <!-- 지역 선택 -->
-    <label for="region-select">Select a region:</label>
+    <label for="region-select">가고 싶은 지역: </label>
     <select id="region-select">
-        <option value="">-- Choose a region --</option>
+        <option value="">-- 여행 지역 --</option>
         {% for region in regions %}
             <option value="{{ region.region_id }}">{{ region.region_name }}</option>
         {% endfor %}
@@ -58,7 +139,7 @@
 
     <!-- 날씨 정보 -->
     <div id="weather-container" class="hidden">
-        <h2>3-Day Weather Forecast</h2>
+        <h2>3일 동안의 예상 날씨입니다.</h2>
         <table>
             <thead>
                 <tr>
@@ -75,14 +156,14 @@
 
     <!-- 코스 정보 -->
     <div id="course-container" class="hidden">
-        <h2>Available Courses</h2>
+        <h2>희망 지역이 포함된 추천 여행 코스입니다.</h2>
         <table>
             <thead>
                 <tr>
                     <th>Course Name</th>
                     <th>Spot Count</th>
                     <th>Total Time</th>
-                    <th>Details</th>
+                    <th>상세 정보</th>
                 </tr>
             </thead>
             <tbody id="course-data"></tbody>
@@ -91,58 +172,11 @@
 
     <!-- Spot 상세 정보 -->
     <div id="spot-container" class="hidden">
-        <h2>Spot Details</h2>
+        <h2>코스에 대한 추천 경로입니다.</h2>
         <div id="spot-data">
             <!-- Spot 테이블이 동적으로 추가됩니다 -->
         </div>
     </div>
-
-    <style>
-        #spot-data {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px;
-            width: 100%;
-        }
-        .spot-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            margin: 10px 0;
-            padding: 15px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .spot-item div {
-            text-align: center;
-        }
-        .spot-number {
-            flex: 0 0 50px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #007bff;
-        }
-        .spot-info {
-            flex-grow: 1;
-            text-align: left;
-            padding: 0 15px;
-        }
-        .spot-time {
-            font-size: 14px;
-            color: gray;
-        }
-        .connector {
-            width: 2px;
-            height: 20px;
-            background-color: #007bff;
-            margin: 0 auto;
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -153,11 +187,12 @@
             const courseData = document.getElementById('course-data');
             const spotContainer = document.getElementById('spot-container');
             const spotData = document.getElementById('spot-data');
-
+            let selectedCourseName = ''; // 선택한 코스 이름을 저장할 변수
+        
             // 지역 선택 시 날씨 및 코스 데이터 가져오기
             regionSelect.addEventListener('change', function () {
                 const regionId = this.value;
-
+        
                 if (regionId) {
                     // 날씨 데이터 가져오기
                     fetch(`/get_weather_data/?region_id=${regionId}`)
@@ -167,7 +202,7 @@
                             data.weather_data.forEach(weather => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
-                                    <td>${weather.date}</td>
+                                    <td>${weather.date_measure}</td>
                                     <td>${weather.max_temperature}</td>
                                     <td>${weather.min_temperature}</td>
                                     <td>${weather.precipitation}</td>
@@ -177,7 +212,7 @@
                             });
                             weatherContainer.classList.remove('hidden');
                         });
-
+        
                     // 코스 데이터 가져오기
                     fetch(`/get_course_data/?region_id=${regionId}`)
                         .then(response => response.json())
@@ -189,7 +224,7 @@
                                     <td>${course.course_name}</td>
                                     <td>${course.spot_count}</td>
                                     <td>${course.total_time}</td>
-                                    <td><button onclick="showSpots(${course.course_id})">Details</button></td>
+                                    <td><button onclick="showSpots(${course.course_id}, '${course.course_name}')">상세정보</button></td>
                                 `;
                                 courseData.appendChild(row);
                             });
@@ -202,46 +237,47 @@
             });
 
             // Spot 상세 정보 가져오기
-            window.showSpots = function (courseId) {
+            window.showSpots = function (courseId, courseName) {
+                selectedCourseName = courseName; // 선택한 코스 이름 저장
                 fetch(`/get_course_spots/?course_id=${courseId}`)
                     .then(response => response.json())
                     .then(data => {
                         spotData.innerHTML = '';
-            
-                        // 경로 제목 추가
+        
+                        // 코스 이름을 제목으로 표시
                         const title = document.createElement('h3');
-                        title.textContent = "Route Map";
+                        title.textContent = `< ${selectedCourseName} >`;
                         spotData.appendChild(title);
-            
+        
                         // Spot 경로를 시각화
                         data.spot_data.forEach((spot, index) => {
                             const spotDiv = document.createElement('div');
                             spotDiv.classList.add('spot-item');
-            
+        
                             // Spot 번호
                             const spotNumber = document.createElement('div');
                             spotNumber.classList.add('spot-number');
                             spotNumber.textContent = `${spot.course_seq}`;
                             spotDiv.appendChild(spotNumber);
-            
+        
                             // Spot 이름과 상세 정보
                             const spotInfo = document.createElement('div');
                             spotInfo.classList.add('spot-info');
                             spotInfo.innerHTML = `
                                 <div><strong>${spot.spot_name}</strong> (${spot.region_name})</div>
-                                <div>Theme: ${spot.course_name}, Type: ${spot.div_inout}</div>
+                                <div>실내외 정보: ${spot.div_inout}</div>
                             `;
                             spotDiv.appendChild(spotInfo);
-            
+        
                             // 이동 시간
                             const travelTime = document.createElement('div');
                             travelTime.classList.add('spot-time');
                             travelTime.textContent = index === 0 ? "Start" : `Travel Time: ${spot.actual_time} mins`;
                             spotDiv.appendChild(travelTime);
-            
+        
                             // Spot 항목 추가
                             spotData.appendChild(spotDiv);
-            
+        
                             // 연결 선 추가 (마지막 Spot 제외)
                             if (index !== data.spot_data.length - 1) {
                                 const connector = document.createElement('div');
@@ -249,7 +285,7 @@
                                 spotData.appendChild(connector);
                             }
                         });
-            
+        
                         // Spot 컨테이너 표시
                         spotContainer.classList.remove('hidden');
                     })
