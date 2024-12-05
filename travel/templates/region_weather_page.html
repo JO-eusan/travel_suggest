@@ -97,6 +97,53 @@
         </div>
     </div>
 
+    <style>
+        #spot-data {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .spot-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 15px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .spot-item div {
+            text-align: center;
+        }
+        .spot-number {
+            flex: 0 0 50px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .spot-info {
+            flex-grow: 1;
+            text-align: left;
+            padding: 0 15px;
+        }
+        .spot-time {
+            font-size: 14px;
+            color: gray;
+        }
+        .connector {
+            width: 2px;
+            height: 20px;
+            background-color: #007bff;
+            margin: 0 auto;
+        }
+    </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const regionSelect = document.getElementById('region-select');
@@ -159,38 +206,48 @@
                 fetch(`/get_course_spots/?course_id=${courseId}`)
                     .then(response => response.json())
                     .then(data => {
-                        // 테이블 헤더 생성
-                        spotData.innerHTML = `
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>순서</th>
-                                        <th>관광지명</th>
-                                        <th>지역명</th>
-                                        <th>테마명</th>
-                                        <th>실내구분</th>
-                                        <th>이동 시간 (분)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        `;
+                        spotData.innerHTML = '';
             
-                        const tbody = spotData.querySelector('tbody');
+                        // 경로 제목 추가
+                        const title = document.createElement('h3');
+                        title.textContent = "Route Map";
+                        spotData.appendChild(title);
             
-                        // 테이블 데이터 추가
-                        data.spot_data.forEach(spot => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${spot.course_seq}</td>
-                                <td>${spot.spot_name}</td>
-                                <td>${spot.region_name}</td>
-                                <td>${spot.course_name}</td>
-                                <td>${spot.div_inout}</td>
-                                <td>${spot.time_move}</td>
+                        // Spot 경로를 시각화
+                        data.spot_data.forEach((spot, index) => {
+                            const spotDiv = document.createElement('div');
+                            spotDiv.classList.add('spot-item');
+            
+                            // Spot 번호
+                            const spotNumber = document.createElement('div');
+                            spotNumber.classList.add('spot-number');
+                            spotNumber.textContent = `${spot.course_seq}`;
+                            spotDiv.appendChild(spotNumber);
+            
+                            // Spot 이름과 상세 정보
+                            const spotInfo = document.createElement('div');
+                            spotInfo.classList.add('spot-info');
+                            spotInfo.innerHTML = `
+                                <div><strong>${spot.spot_name}</strong> (${spot.region_name})</div>
+                                <div>Theme: ${spot.course_name}, Type: ${spot.div_inout}</div>
                             `;
-                            tbody.appendChild(row);
+                            spotDiv.appendChild(spotInfo);
+            
+                            // 이동 시간
+                            const travelTime = document.createElement('div');
+                            travelTime.classList.add('spot-time');
+                            travelTime.textContent = index === 0 ? "Start" : `Travel Time: ${spot.actual_time} mins`;
+                            spotDiv.appendChild(travelTime);
+            
+                            // Spot 항목 추가
+                            spotData.appendChild(spotDiv);
+            
+                            // 연결 선 추가 (마지막 Spot 제외)
+                            if (index !== data.spot_data.length - 1) {
+                                const connector = document.createElement('div');
+                                connector.classList.add('connector');
+                                spotData.appendChild(connector);
+                            }
                         });
             
                         // Spot 컨테이너 표시
